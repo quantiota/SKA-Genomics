@@ -27,7 +27,7 @@ It provides:
 
 1. **Clone this repository**
 2. **Place or download a FASTA file or DNA sequence in `data/`**
-3. **Run `notebooks/SKA_genome_analysis.ipynb` to generate and plot entropy/knowledge profiles**
+3. **Run `src/SKA_genome_analysis.py` to generate and plot entropy/knowledge profiles**
 
 
 
@@ -42,7 +42,6 @@ It provides:
 ## Folder Structure
 
 - `data/` — Genome or sequence files (FASTA/CSV)
-- `notebooks/` — Analysis notebooks
 - `src/` — SKA algorithm and utilities
 - `figures/` — Output plots and example results
 
