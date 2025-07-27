@@ -75,6 +75,17 @@ SKA-Genome enables:
 
 - Insights into cancer, evolution, and genome organization beyond classical variant-centric methods
 
+## Foundation Theory
+
+The SKA-Genome project is based on the theoretical framework and mathematical foundations of Structured Knowledge Accumulation (SKA) developed by QUANTIOTA.
+
+For in-depth theory, proofs, and reference papers, please see our open-access arXiv repository:
+
+**[QUANTIOTA / Arxiv — Foundation Theory](https://github.com/quantiota/Arxiv)**
+
+This resource covers the core principles that power SKA’s universal, model-free learning across genomics, physics, finance, and more.
+
+
 
 ## Citation
 
