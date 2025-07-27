@@ -81,7 +81,7 @@ The SKA-Genome project is based on the theoretical framework and mathematical fo
 
 For in-depth theory, proofs, and reference papers, please see our open-access arXiv repository:
 
-**[QUANTIOTA / Arxiv — Foundation Theory](https://github.com/quantiota/Arxiv)**
+[QUANTIOTA / Arxiv — Foundation Theory](https://github.com/quantiota/Arxiv)
 
 This resource covers the core principles that power SKA’s universal, model-free learning across genomics, physics, finance, and more.
 
