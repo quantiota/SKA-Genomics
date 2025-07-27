@@ -85,6 +85,13 @@ For in-depth theory, proofs, and reference papers, please see our open-access ar
 
 This resource covers the core principles that power SKA’s universal, model-free learning across genomics, physics, finance, and more.
 
+ **Note:**  
+ 
+In SKA, the information structure of the genome is *not* pre-existing or revealed by batch analysis.
+
+It emerges dynamically through the real-time, step-by-step SKA learning process.  
+
+This enables the unsupervised discovery of boundaries, complexity, and informational “landmarks” that are otherwise invisible to traditional, retrospective methods.
 
 
 ## Citation
