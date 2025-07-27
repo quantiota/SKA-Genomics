@@ -1,4 +1,4 @@
-# SKA-Genome: Information Geometry of the Human Genome
+# SKA Genome: Information Geometry of the Human Genome
 
 **Exploring the hidden information architecture of the genome using Structured Knowledge Accumulation (SKA).**
 
