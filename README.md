@@ -19,6 +19,30 @@ Unlike traditional genomics tools, SKA analyzes the *information architecture* o
 - **Unsupervised discovery:** Flags informational anomalies, boundaries, and regime changes invisible to variant-centric or alignment-based methods.
 
 
+## Getting Started
+
+1. Download a FASTA file (e.g., human chromosome)
+2. Run the SKA script:
+   ```bash
+   python src/ska_genome_analysis.py --input data/Homo_sapiens.GRCh38.dna.chromosome.21.fa --output figures/chr21_entropy.png
+
+## Quick Start (Demo)
+
+For rapid testing or educational purposes, we recommend beginning with the classic *E. coli* K-12 reference genome:
+
+- **Small size** (4.6 Mb) for fast prototyping
+- **Universal compatibility** with all genomics tools
+- **Extensively annotated** for comparison and validation
+
+Download:
+
+```bash
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/GCF_000005845.2_ASM584v2_genomic.fna.gz
+gunzip GCF_000005845.2_ASM584v2_genomic.fna.gz
+```
+
+
+
 
 ## Example Applications
 
