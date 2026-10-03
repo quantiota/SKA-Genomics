@@ -195,5 +195,75 @@ sustain the stream.
 
 ## Data Collection Summary
 
-Run `python validate_data.py` after a collection; it prints a report to the
-console for pasting here.
+Produced by `python validate_data.py` after a full linear collection.
+
+```
+record     NC_000913.3  Escherichia coli K-12 MG1655
+chain      4,641,652 bp
+collected  4,641,651 steps  (order=linear, rate 15,500 Hz)
+```
+
+### Chain coverage
+
+| | |
+|---|---|
+| rows | 4,641,651 |
+| distinct `chain_index` | 4,641,651 |
+| range | 1–4,641,651 |
+| repeated positions | 0 |
+| gaps within range | 0 |
+
+### Transition coverage — 16 of 16 present
+
+| idx | step | ΔG | count |
+|---|---|---|---|
+| 0 | AA | -1.00 | 338,006 |
+| 1 | AT | -0.88 | 309,950 |
+| 2 | AG | -1.28 | 238,013 |
+| 3 | AC | -1.44 | 256,773 |
+| 4 | TA | -0.58 | 212,024 |
+| 5 | TT | -1.00 | 339,584 |
+| 6 | TG | -1.45 | 322,379 |
+| 7 | TC | -1.30 | 267,395 |
+| 8 | GA | -1.30 | 267,384 |
+| 9 | GT | -1.44 | 255,699 |
+| 10 | GG | -1.84 | 270,252 |
+| 11 | GC | -2.24 | 384,102 |
+| 12 | CA | -1.45 | 325,327 |
+| 13 | CT | -1.28 | 236,149 |
+| 14 | CG | -2.17 | 346,793 |
+| 15 | CC | -1.84 | 271,821 |
+
+### Collected vs whole-genome counts
+
+An independent round-trip: counts read back from the database against the
+reference re-read from the FASTA. All ten energy levels agree.
+
+| ΔG | collected | genome |
+|---|---|---|
+| -2.24 | 384,102 | 384,102 |
+| -2.17 | 346,793 | 346,793 |
+| -1.84 | 542,073 | 542,073 |
+| -1.45 | 647,706 | 647,706 |
+| -1.44 | 512,472 | 512,472 |
+| -1.30 | 534,779 | 534,779 |
+| -1.28 | 474,162 | 474,162 |
+| -1.00 | 677,590 | 677,590 |
+| -0.88 | 309,950 | 309,950 |
+| -0.58 | 212,024 | 212,024 |
+
+### Data quality
+
+```
+🔍 Data quality:
+   NULL value: 0
+   NULL record_id: 0
+   NULL step_index: 0
+   NULL pair: 0
+   positive ΔG (should be 0): 0
+   duplicate step_index: 0
+   repeated chain_index: 0
+   chain gaps: 0
+   fork imbalance (>1): 0
+✅ Data quality PASSED
+```
