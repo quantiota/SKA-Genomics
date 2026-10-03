@@ -211,44 +211,101 @@ sustain the stream.
 
 ## Data Collection Summary
 
-Produced by `python validate_data.py` after a full linear collection.
+Produced by `python validate_data.py` after a full replication-order collection.
 
 ```
 record     NC_000913.3  Escherichia coli K-12 MG1655
-chain      4,641,652 bp
-collected  4,641,651 steps  (order=linear, rate 15,500 Hz)
+chain      4,641,652 bp (circular)
+collected  4,641,652 steps  (order=replication, oriC 3,925,744,
+           2,000 Hz total = 1,000 bp/s per fork, 38.7 min)
 ```
+
+The 38.7 min is worth noting against the known ~40 min C-period: the rate was
+set from the fork speed, not fitted to the duration.
 
 ### Chain coverage
 
 | | |
 |---|---|
-| rows | 4,641,651 |
-| distinct `chain_index` | 4,641,651 |
-| range | 1–4,641,651 |
+| rows | 4,641,652 |
+| distinct `chain_index` | 4,641,652 |
+| range | 1–4,641,652 |
 | repeated positions | 0 |
 | gaps within range | 0 |
+
+The step count is 4,641,652 rather than 4,641,651 because replication order
+closes the ring: the step from the last base back to the first is emitted.
+
+### Fork balance
+
+| fork | steps |
+|---|---|
+| `fork1` | 2,320,826 |
+| `fork2` | 2,320,826 |
+| difference | 0 |
+
+Each fork covers exactly half the chromosome, which is the check that the
+interleaving is correct.
+
+### Collected rows
+
+The first eight rows as collected — the two forks interleaved, leaving `oriC`
+in opposite directions:
+
+| step_index | fork | chain_index | position | pair | transition_index | value | timestamp |
+|---|---|---|---|---|---|---|---|
+| 1 | `fork1` | 3,925,745 | 3,925,746 | AT | 1 | -0.88 | 14:27:49.216611 |
+| 2 | `fork2` | 3,925,744 | 3,925,745 | TC | 7 | -1.3 | 14:27:49.217111 |
+| 3 | `fork1` | 3,925,746 | 3,925,747 | TC | 7 | -1.3 | 14:27:49.217611 |
+| 4 | `fork2` | 3,925,743 | 3,925,744 | CT | 13 | -1.28 | 14:27:49.218111 |
+| 5 | `fork1` | 3,925,747 | 3,925,748 | CT | 13 | -1.28 | 14:27:49.218611 |
+| 6 | `fork2` | 3,925,742 | 3,925,743 | TT | 5 | -1.0 | 14:27:49.219111 |
+| 7 | `fork1` | 3,925,748 | 3,925,749 | TA | 4 | -0.58 | 14:27:49.219611 |
+| 8 | `fork2` | 3,925,741 | 3,925,742 | TC | 7 | -1.3 | 14:27:49.220111 |
+
+`chain_index` moves **outward in both directions** from 3,925,744, and no two
+consecutive rows are neighbours on the chain — they belong to different forks.
+
+Filtering to one fork recovers a contiguous walk at the 1 ms replication step:
+
+```sql
+SELECT * FROM genome_steps WHERE fork = 'fork1' ORDER BY step_index;
+```
+
+| step_index | chain_index | pair | value | timestamp |
+|---|---|---|---|---|
+| 1 | 3,925,745 | AT | -0.88 | 14:27:49.216611 |
+| 3 | 3,925,746 | TC | -1.3 | 14:27:49.217611 |
+| 5 | 3,925,747 | CT | -1.28 | 14:27:49.218611 |
+| 7 | 3,925,748 | TA | -0.58 | 14:27:49.219611 |
+| 9 | 3,925,749 | AT | -0.88 | 14:27:49.220611 |
+
+`step_index` advances by 2 (the other fork takes the alternate slots),
+`chain_index` by 1, and the timestamps by exactly 1.000 ms.
 
 ### Transition coverage — 16 of 16 present
 
 | idx | step | ΔG | count |
 |---|---|---|---|
-| 0 | AA | -1.00 | 338,006 |
+| 0 | AA | -1.00 | 340,209 |
 | 1 | AT | -0.88 | 309,950 |
-| 2 | AG | -1.28 | 238,013 |
-| 3 | AC | -1.44 | 256,773 |
+| 2 | AG | -1.28 | 240,989 |
+| 3 | AC | -1.44 | 246,218 |
 | 4 | TA | -0.58 | 212,024 |
-| 5 | TT | -1.00 | 339,584 |
-| 6 | TG | -1.45 | 322,379 |
-| 7 | TC | -1.30 | 267,395 |
-| 8 | GA | -1.30 | 267,384 |
-| 9 | GT | -1.44 | 255,699 |
-| 10 | GG | -1.84 | 270,252 |
+| 5 | TT | -1.00 | 337,381 |
+| 6 | TG | -1.45 | 338,864 |
+| 7 | TC | -1.30 | 258,490 |
+| 8 | GA | -1.30 | 276,289 |
+| 9 | GT | -1.44 | 266,254 |
+| 10 | GG | -1.84 | 289,428 |
 | 11 | GC | -2.24 | 384,102 |
-| 12 | CA | -1.45 | 325,327 |
-| 13 | CT | -1.28 | 236,149 |
+| 12 | CA | -1.45 | 308,843 |
+| 13 | CT | -1.28 | 233,173 |
 | 14 | CG | -2.17 | 346,793 |
-| 15 | CC | -1.84 | 271,821 |
+| 15 | CC | -1.84 | 252,645 |
+
+Labels are leading-strand: fork 2's steps are reverse-complemented, so the
+counts are not the raw top-strand counts. `value` is unaffected.
 
 ### Collected vs whole-genome counts
 
@@ -260,7 +317,7 @@ reference re-read from the FASTA. All ten energy levels agree.
 | -2.24 | 384,102 | 384,102 |
 | -2.17 | 346,793 | 346,793 |
 | -1.84 | 542,073 | 542,073 |
-| -1.45 | 647,706 | 647,706 |
+| -1.45 | 647,707 | 647,707 |
 | -1.44 | 512,472 | 512,472 |
 | -1.30 | 534,779 | 534,779 |
 | -1.28 | 474,162 | 474,162 |
