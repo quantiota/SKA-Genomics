@@ -1,0 +1,17 @@
+# Reference genome — fetched with ./fetch_data.sh, not committed (4.5 MB)
+data/
+*.fna
+*.fasta
+
+# Runtime output
+logs/
+*.log
+
+# QuestDB console exports
+questdb-query-*.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
