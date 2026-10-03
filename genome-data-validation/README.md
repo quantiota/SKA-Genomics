@@ -94,6 +94,17 @@ rows are shipped 1,000 at a time, not at the instant each timestamp claims. To
 obtain genuine jitter the stream would have to stamp every row with
 `time.time_ns()` at the moment of emission, one row at a time.
 
+In replication order `--rate` is the total, shared between two forks, so the
+grid spacing differs depending on how you read the table:
+
+```
+raw stream, forks interleaved   delta_t = 0.5 ms  (at --rate 2000)
+one fork alone                  delta_t = 1.0 ms  = 1,000 bp/s
+```
+
+The 0.5 ms is an artefact of two forks sharing one emission channel; nothing
+physical moves at that rate. Filtering by `fork` gives the biological 1 ms.
+
 ## Emission order
 
 ```
@@ -128,6 +139,11 @@ that reads transitions from consecutive rows would be reading noise.
 ```sql
 SELECT * FROM genome_steps WHERE fork = 'fork1' ORDER BY step_index;
 ```
+
+The same applies to timing. At `--rate 2000` consecutive raw rows are 0.5 ms
+apart, but consecutive rows *within* a fork are 1.0 ms apart — the replication
+step. Reading the raw interleave gets both the positions and the intervals
+wrong.
 
 ### The rate is shared between the forks
 

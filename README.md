@@ -1,285 +1,105 @@
-# Genomic Data Stream Validation
+# SKA Genome: Information Geometry of the Human Genome
 
-Simulated real-time genomic chain streaming and QuestDB ingestion validation.
+**Exploring the hidden information architecture of the genome using Structured Knowledge Accumulation (SKA).**
 
-## Purpose
 
-- Validate streaming of a genomic chain one base-pair step at a time
-- Test QuestDB table creation and ILP ingestion
-- Collect clean raw genomic parameters for future SKA analysis
 
-No returns, no entropy, no learning at this stage. **Raw values only.**
+## Overview
 
-## Development environment
+**SKA-Genome** applies the SKA learning framework to DNA sequences, generating information-theoretic “entropy maps” of the genome.  
+Unlike traditional genomics tools, SKA analyzes the *information architecture* of sequences in a forward-only, model-free fashion—highlighting novel, functionally significant, or complex regions without the need for prior annotation or motif databases.
 
-AI Agent Host — [Quick start](https://github.com/quantiota/AI-Agent-Host)
 
-## Quick start
 
-```bash
-pip install -r requirements.txt
+## Why SKA?
 
-# Download the E. coli K-12 MG1655 reference genome from NCBI
-./fetch_data.sh
+- **Model-free:** No need for predefined motifs, gene models, or references.
+- **Adaptive:** SKA “learns” directly from the data stream—mapping entropy and knowledge along the sequence.
+- **Universal:** Works for DNA, RNA, protein, epigenomic marks, or even time-series derived from single-cell or tumor data.
+- **Unsupervised discovery:** Flags informational anomalies, boundaries, and regime changes invisible to variant-centric or alignment-based methods.
 
-# Point at your QuestDB instance
-export QDB_PG_HOST=localhost      # pg-wire on 8812, ILP on 9009
 
-# 1. Test the connection
-python test_connection.py
+## Getting Started
 
-# 2. Stream the chain into QuestDB
-python genome_stream_validator.py
+1. Download a FASTA file (e.g., human chromosome)
+2. Run the SKA script:
+   ```bash
+   python src/ska_genome_analysis.py --input data/Homo_sapiens.GRCh38.dna.chromosome.21.fa --output figures/chr21_entropy.png
 
-# 3. Validate the collected data
-python validate_data.py
-```
+## Quick Start (Demo)
 
-Options: `--max-steps N` for a subset, `--rate HZ` for the total emission rate,
-`--order linear|replication`, `--origin N` for oriC, `--raw-strand` for
-top-strand labels on fork 2, and `--recreate` to drop an existing non-empty
-table (refused without it, so a running collection cannot be destroyed by
-accident).
+For rapid testing or educational purposes, we recommend beginning with the classic *E. coli* K-12 reference genome:
 
-Note: interrupting during a socket send may leave a partially written packet;
-`validate_data.py` will report the resulting gap.
+- **Small size** (4.6 Mb) for fast prototyping
+- **Universal compatibility** with all genomics tools
+- **Extensively annotated** for comparison and validation
 
-## What a step is
-
-The chain is walked one base-pair step at a time. Each step carries the
-**nearest-neighbour stacking free energy** of that step:
-
-```
-step k  =  b_k -> b_{k+1}
-value   =  dG37 of that step     (SantaLucia 1998)
-```
-
-Sixteen dinucleotide steps, ten distinct values — complementary steps
-(`AA/TT`, `CA/TG`, `GT/AC`, `CT/AG`, `GA/TC`, `GG/CC`) share a parameter,
-because they are the same physical stack read from opposite strands.
-
-The value sits on the **step**, not on the letter: a base is a token with no
-magnitude, a step is a measured physical quantity.
-
-## Why 1,000 steps per second
-
-A genomic chain has no native sampling rate, so one must be imposed. Rather than
-pick a convenient number, the stream runs at the rate the cell builds the chain:
-
-```
-E. coli replication fork (DNA Pol III)  ~1,000 bp/s   ->  1 ms per step
-```
-
-Cross-check: replication is bidirectional from `oriC`, so each of two forks
-covers ~2.32 Mb, and the known ~40 min C-period gives
-`2.32e6 / 2400 s ~ 967 bp/s`.
-
-One single pass over 4,641,651 steps therefore takes **~77 minutes**.
-
-## Timestamps are assigned, not measured
-
-Each row is stamped on a **fixed grid** anchored at the run's start time:
-
-```
-timestamp(k) = t_start + k / rate_hz
-```
-
-These are **assigned** timestamps. A downstream `delta_t` will return exactly
-`1/rate_hz` with no jitter — it recovers the configured rate rather than
-measuring anything. The determinism is deliberate and is the right property for
-analysis, but it must not be mistaken for an observation.
-
-Packets are paced against the wall clock so the collection takes real time, but
-rows are shipped 1,000 at a time, not at the instant each timestamp claims. To
-obtain genuine jitter the stream would have to stamp every row with
-`time.time_ns()` at the moment of emission, one row at a time.
-
-In replication order `--rate` is the total, shared between two forks, so the
-grid spacing differs depending on how you read the table:
-
-```
-raw stream, forks interleaved   delta_t = 0.5 ms  (at --rate 2000)
-one fork alone                  delta_t = 1.0 ms  = 1,000 bp/s
-```
-
-The 0.5 ms is an artefact of two forks sharing one emission channel; nothing
-physical moves at that rate. Filtering by `fork` gives the biological 1 ms.
-
-## Emission order
-
-```
-linear       position 1 -> end                                    (default)
-replication  two forks leaving oriC in opposite directions
-             around the circular chromosome, interleaved
-```
-
-**`linear` is not how the cell reads the chain.** Replication starts at `oriC`
-(~3.92 Mb in E. coli) and runs as two forks toward the terminus. This matters:
-the GC-skew dipole reverses at `oriC` and at `ter`, so a linear walk crosses
-both reversals at positions that look arbitrary to a learner.
+Download:
 
 ```bash
-python genome_stream_validator.py --order replication --origin 3925744 --rate 2000
+wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/GCF_000005845.2_ASM584v2_genomic.fna.gz
+gunzip GCF_000005845.2_ASM584v2_genomic.fna.gz
 ```
 
-`--origin` is a **0-based** chain index, so fork 1 begins at `chain_index`
-3,925,745 and fork 2 at 3,925,744. Replication order closes the ring — the
-step from the last base back to the first is emitted — giving 4,641,652 steps
-against the linear 4,641,651.
 
-### Read one fork at a time
 
-In replication order the two forks are **interleaved**, so consecutive rows sit
-about 2 Mb apart on the chain and **no two consecutive rows are neighbours**.
-That is physically correct — both forks advance simultaneously — but a consumer
-that reads transitions from consecutive rows would be reading noise.
 
-`fork` is a SYMBOL column for exactly this reason. Read one series at a time:
+## Example Applications
 
-```sql
-SELECT * FROM genome_steps WHERE fork = 'fork1' ORDER BY step_index;
-```
+- **Genome annotation:** Detect genes, regulatory elements, repetitive regions, and structural boundaries.
+- **Cancer genomics:** Compare normal and tumor tissue; track clonal evolution or chromosomal instability.
+- **Evolutionary genomics:** Identify conserved vs. rapidly evolving regions; discover species-specific “information signatures.”
+- **Personalized medicine:** Explore patient-specific entropy landscapes; highlight novel or rare genomic events.
+- **Single-cell & multi-omics:** Map heterogeneity and transitions in complex cell populations.
 
-The same applies to timing. At `--rate 2000` consecutive raw rows are 0.5 ms
-apart, but consecutive rows *within* a fork are 1.0 ms apart — the replication
-step. Reading the raw interleave gets both the positions and the intervals
-wrong.
 
-### The rate is shared between the forks
 
-`--rate` is the **total** emission rate. In replication order each fork
-therefore advances at half of it:
+## Folder Structure
 
-| `--rate` | per fork | duration |
-|---|---|---|
-| 1000 | 500 bp/s | 77 min |
-| **2000** | **1,000 bp/s** | **39 min** |
+- `data/` — Genome or sequence files (FASTA/CSV)
+- `src/` — SKA algorithm and utilities
+- `figures/` — Output plots and example results
+- `README.md` — Project documentation and instructions
 
-`--rate 2000` gives each fork the biological ~1,000 bp/s, and the resulting
-~39 min matches the known ~40 min C-period — a useful consistency check.
 
-### Which strand fork 2 is reported on
 
-Fork 2 travels backwards along top-strand coordinates, so its own leading strand
-is the reverse complement. By default each step is reported **as its own fork
-reads it**, which keeps GC skew at one sign across the whole stream rather than
-reversing at `oriC` and `ter`. Pass `--raw-strand` for raw top-strand labels.
+## Scientific Impact
 
-This affects `pair` and `transition_index` only. **`value` is identical either
-way**, because dG is strand-symmetric by construction — `AA/TT`, `CA/TG`,
-`GT/AC`, `CT/AG`, `GA/TC` and `GG/CC` each share a parameter. The choice is
-about metadata, not about what a learner consumes.
+SKA-Genome enables:
 
-## Schema
+- Unsupervised mapping of the genome’s information landscape at any scale (nucleotide, gene, chromosome, whole genome)
 
-```sql
-CREATE TABLE genome_steps (
-    record_id SYMBOL,          -- NC_000913.3
-    organism SYMBOL,
-    step_index LONG,           -- emission order
-    chain_index LONG,          -- position along the chain
-    position LONG,             -- bp coordinate of the second base
-    fork LONG,                 -- 0 linear, else 1 or 2 in replication order
-    pair SYMBOL,               -- the dinucleotide, e.g. 'AG'
-    transition_index LONG,     -- 0..15
-    value DOUBLE,              -- dG of the step (kcal/mol)
-    rate_hz DOUBLE,            -- imposed acquisition rate (provenance)
-    chain_length LONG,
-    total_steps LONG,
-    timestamp TIMESTAMP        -- assigned, on a fixed grid
-) TIMESTAMP(timestamp) PARTITION BY DAY;
-```
+- Discovery of boundaries and functional elements even in poorly annotated or novel genomes
 
-Ingestion uses QuestDB's **InfluxDB line protocol on port 9009**
-(~600,000 rows/s), not pg-wire — which caps near 3,500 rows/s and cannot
-sustain the stream.
+- Comparative information profiling across samples, tissues, disease states, or species
 
-## Files
+- Insights into cancer, evolution, and genome organization beyond classical variant-centric methods
 
-| file | role |
-|---|---|
-| `genome_chain.py` | the data source — FASTA reader, energy table, step events |
-| `genome_stream_validator.py` | paced emission into QuestDB over ILP |
-| `test_connection.py` | QuestDB smoke test |
-| `validate_data.py` | QC report on the collected chain |
-| `config.py` | QuestDB, ILP, genome and logging configuration |
-| `fetch_data.sh` | download the reference genome from NCBI |
+## Foundation Theory
 
-## Output
+The SKA-Genome project is based on the theoretical framework and mathematical foundations of Structured Knowledge Accumulation (SKA) developed by QUANTIOTA.
 
-- `logs/genome_validation.log`
+For in-depth theory, proofs, and reference papers, please see our open-access arXiv repository:
 
-## Data Collection Summary
+[QUANTIOTA / Arxiv — Foundation Theory](https://github.com/quantiota/Arxiv)
 
-Produced by `python validate_data.py` after a full linear collection.
+This resource covers the core principles that power SKA’s universal, model-free learning across genomics, physics, finance, and more.
 
-```
-record     NC_000913.3  Escherichia coli K-12 MG1655
-chain      4,641,652 bp
-collected  4,641,651 steps  (order=linear, rate 15,500 Hz)
-```
+ **Note:**  
+ 
+In SKA, the information structure of the genome is *not* pre-existing or revealed by batch analysis.
 
-### Chain coverage
+It emerges dynamically through the real-time, step-by-step SKA learning process.  
 
-| | |
-|---|---|
-| rows | 4,641,651 |
-| distinct `chain_index` | 4,641,651 |
-| range | 1–4,641,651 |
-| repeated positions | 0 |
-| gaps within range | 0 |
+This enables the unsupervised discovery of boundaries, complexity, and informational “landmarks” that are otherwise invisible to traditional, retrospective methods.
 
-### Transition coverage — 16 of 16 present
 
-| idx | step | ΔG | count |
-|---|---|---|---|
-| 0 | AA | -1.00 | 338,006 |
-| 1 | AT | -0.88 | 309,950 |
-| 2 | AG | -1.28 | 238,013 |
-| 3 | AC | -1.44 | 256,773 |
-| 4 | TA | -0.58 | 212,024 |
-| 5 | TT | -1.00 | 339,584 |
-| 6 | TG | -1.45 | 322,379 |
-| 7 | TC | -1.30 | 267,395 |
-| 8 | GA | -1.30 | 267,384 |
-| 9 | GT | -1.44 | 255,699 |
-| 10 | GG | -1.84 | 270,252 |
-| 11 | GC | -2.24 | 384,102 |
-| 12 | CA | -1.45 | 325,327 |
-| 13 | CT | -1.28 | 236,149 |
-| 14 | CG | -2.17 | 346,793 |
-| 15 | CC | -1.84 | 271,821 |
+## Citation
 
-### Collected vs whole-genome counts
+If you use this work, please cite:  
+> **Bouarfa Mahi, “SKA-Genome: Information Geometry of the Human Genome” (2025), GitHub.**
 
-An independent round-trip: counts read back from the database against the
-reference re-read from the FASTA. All ten energy levels agree.
 
-| ΔG | collected | genome |
-|---|---|---|
-| -2.24 | 384,102 | 384,102 |
-| -2.17 | 346,793 | 346,793 |
-| -1.84 | 542,073 | 542,073 |
-| -1.45 | 647,706 | 647,706 |
-| -1.44 | 512,472 | 512,472 |
-| -1.30 | 534,779 | 534,779 |
-| -1.28 | 474,162 | 474,162 |
-| -1.00 | 677,590 | 677,590 |
-| -0.88 | 309,950 | 309,950 |
-| -0.58 | 212,024 | 212,024 |
 
-### Data quality
 
-```
-🔍 Data quality:
-   NULL value: 0
-   NULL record_id: 0
-   NULL step_index: 0
-   NULL pair: 0
-   positive ΔG (should be 0): 0
-   duplicate step_index: 0
-   repeated chain_index: 0
-   chain gaps: 0
-   fork imbalance (>1): 0
-✅ Data quality PASSED
-```
+
