@@ -54,14 +54,6 @@ gunzip GCF_000005845.2_ASM584v2_genomic.fna.gz
 
 
 
-## Folder Structure
-
-- `data/` — Genome or sequence files (FASTA/CSV)
-- `src/` — SKA algorithm and utilities
-- `figures/` — Output plots and example results
-- `README.md` — Project documentation and instructions
-
-
 
 ## Scientific Impact
 
