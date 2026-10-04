@@ -11,6 +11,27 @@ P(k) = exp( -| (H_k - H_{k-1}) / H_k | )
 then separates into 16 bands, each splitting into exactly 4 sub-bands — 64 in
 total, one per trinucleotide.
 
+## Result
+
+SKA learning assigns each of the 16 base-pair transitions, and each of their 64
+trinucleotide contexts, a **constant transition probability** along the E. coli
+chain. These probability bands are sharp, stable after a short learning phase,
+and independent of composition.
+
+Measured on this run:
+
+| | median spread | median std | max spread |
+|---|---|---|---|
+| all 3,498 steps | 0.0282 | 0.0046 | 0.429 |
+| **after step 500** | **0.0035** | **0.00093** | 0.0129 |
+| after step 1,000 | 0.0027 | 0.00073 | 0.0097 |
+
+The transient is the matrix growing; past ~500 steps each of the 64 contexts
+holds its own value to about one part in a thousand and does not drift for the
+remaining 3,000 steps. Independence from composition is the Spearman test
+below — ≈ 0 against 3-mer counts and against GC content.
+
+
 ## The run
 
 | | |
