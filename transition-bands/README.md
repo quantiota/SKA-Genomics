@@ -127,7 +127,7 @@ mode and read differently here:
 | `x_input` | `sigmoid(level × scale)` — what the learner received |
 | `entropy` | H(k) |
 | `knowledge`, `decision`, `decision_norm` | ‖Z‖, D[-1], ‖D‖ |
-| `matrix_size` | k, growing to 3,500 |
+
 
 The export has no `pair` column; `band_means.csv` carries the per-transition
 figures, and the Grafana queries join `genome_steps` for the letters.
