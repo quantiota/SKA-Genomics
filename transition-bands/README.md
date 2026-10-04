@@ -37,6 +37,22 @@ near-tie.
 level = ΔG × sign(tilt)  +  0.12 × z(twist)      ->  16 distinct, min gap 0.0825
 ```
 
+Three caveats belong with that formula:
+
+- **Measured vs convention.** The antisymmetry is measured — tilt flips sign
+  between a step and its complement. The sign *assignment* is a convention:
+  which strand counts as positive. Flipping all sixteen gives a mirrored,
+  equally valid encoding. For `GG`/`CC` and `AC`/`GT` the ±0.1° tilt sits
+  inside a 3–4° spread, so there the assignment is convention too.
+- **The 0.12 is tuned.** Other weights change the *order* of the levels, not
+  just their spacing — 0.05, 0.30 and 0.50 all reorder them, and 0.14 drops the
+  minimum gap to 0.026. A tuning-free variant keeps the ordering and spaces the
+  sixteen evenly in [−1, 1], giving a uniform gap of 0.1333 at the cost of ΔG
+  magnitude.
+- **The axis is not a stability scale.** `T→T` sits at −0.955 and `A→A` at
+  +1.045 although both have ΔG = −1.00. Levels order by strand direction first
+  and energy second: a code for identity, not for duplex stability.
+
 Feeding `level` directly — rather than a return between consecutive steps —
 makes the input a function of the current transition alone. Measured band
 separation:
@@ -111,11 +127,12 @@ mode and read differently here:
 | `x_input` | `sigmoid(level × scale)` — what the learner received |
 | `entropy` | H(k) |
 | `knowledge`, `decision`, `decision_norm` | ‖Z‖, D[-1], ‖D‖ |
+| `matrix_size` | k, growing to 3,500 |
 
 The export has no `pair` column; `band_means.csv` carries the per-transition
 figures, and the Grafana queries join `genome_steps` for the letters.
 
-## Images
+## Images to add
 
 | file | panel |
 |---|---|
@@ -130,10 +147,6 @@ Queries that produce them are in `../transition-bands/queries/`:
 - `grafana_entropy.sql` — the entropy panel
 - `grafana_transition_bands.sql` — the 16 bands
 
-
-**Fix the axes before capturing the set of 16** — y min 0, y max 1, x max 7000.
-Otherwise each panel autoscales and unequal spreads look equal: `G→C` spans
-0.09–0.95 while `T→G` spans only 0.53–0.59.
 
 ## References
 
