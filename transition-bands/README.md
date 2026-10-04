@@ -142,3 +142,4 @@ Otherwise each panel autoscales and unequal spreads look equal: `G→C` spans
 >
 > Lankaš, Šponer, Langowski & Cheatham (2003), *DNA basepair step deformability
 > inferred from molecular dynamics simulations*, Biophys. J. 85:2872–2883.
+

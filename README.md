@@ -94,10 +94,24 @@ It emerges dynamically through the real-time, step-by-step SKA learning process.
 This enables the unsupervised discovery of boundaries, complexity, and informational “landmarks” that are otherwise invisible to traditional, retrospective methods.
 
 
+
+## SKA Framework: Open Science, Proprietary Real-Time Engine
+
+The full mathematical foundation and batch implementation are public for verification on
+[GitHub](https://github.com/quantiota/Arxiv).
+The real-time system extends that foundation to continuous entropy learning — that part is proprietary.
+
+
+**Interactive visualization of the SKA forward learning algorithm on MNIST**
+
+- [SKA Explorer](https://huggingface.co/quant-iota)
+
+
+
 ## Citation
 
 If you use this work, please cite:  
-> **Bouarfa Mahi, “SKA-Genome: Information Geometry of the Human Genome” (2025), GitHub.**
+> **Bouarfa Mahi, “SKA-Genome: Exploring the hidden information architecture of the genome using Structured Knowledge Accumulation (SKA)” (2025), GitHub.**
 
 
 
