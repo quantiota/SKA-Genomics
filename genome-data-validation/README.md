@@ -61,6 +61,14 @@ because they are the same physical stack read from opposite strands.
 The value sits on the **step**, not on the letter: a base is a token with no
 magnitude, a step is a measured physical quantity.
 
+### Known issue — the ten-value degeneracy
+
+`value` alone cannot tell a step from its reverse complement: a consumer sees
+ten levels where the chain has sixteen transitions, so six pairs are
+indistinguishable. `pair` and `transition_index` carry the missing identity,
+but nothing reading only `value` can recover it. The collection is correct;
+the fix belongs downstream, in how an analysis encodes its input.
+
 ## Why 1,000 steps per second
 
 A genomic chain has no native sampling rate, so one must be imposed. Rather than
