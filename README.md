@@ -1,106 +1,117 @@
-# SKA Genome: Information Geometry of the Human Genome
+# SKA RealTime Genomics
 
-**Exploring the hidden information architecture of the genome using Structured Knowledge Accumulation (SKA).**
+**Entropy-driven, real-time learning on a genomic chain with the Structured
+Knowledge Accumulation (SKA) framework.**
 
+The chromosome is streamed one base-pair step at a time, at the rate the cell
+builds it, and a forward-only learner consumes it live — no batch pass, no
+backpropagation, no annotation.
 
+## The chain as a data stream
 
-## Overview
-
-**SKA-Genome** applies the SKA learning framework to DNA sequences, generating information-theoretic “entropy maps” of the genome.  
-Unlike traditional genomics tools, SKA analyzes the *information architecture* of sequences in a forward-only, model-free fashion—highlighting novel, functionally significant, or complex regions without the need for prior annotation or motif databases.
-
-
-
-## Why SKA?
-
-- **Model-free:** No need for predefined motifs, gene models, or references.
-- **Adaptive:** SKA “learns” directly from the data stream—mapping entropy and knowledge along the sequence.
-- **Universal:** Works for DNA, RNA, protein, epigenomic marks, or even time-series derived from single-cell or tumor data.
-- **Unsupervised discovery:** Flags informational anomalies, boundaries, and regime changes invisible to variant-centric or alignment-based methods.
-
-
-## Getting Started
-
-1. Download a FASTA file (e.g., human chromosome)
-2. Run the SKA script:
-   ```bash
-   python src/ska_genome_analysis.py --input data/Homo_sapiens.GRCh38.dna.chromosome.21.fa --output figures/chr21_entropy.png
-
-## Quick Start (Demo)
-
-For rapid testing or educational purposes, we recommend beginning with the classic *E. coli* K-12 reference genome:
-
-- **Small size** (4.6 Mb) for fast prototyping
-- **Universal compatibility** with all genomics tools
-- **Extensively annotated** for comparison and validation
-
-Download:
-
-```bash
-wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/GCF_000005845.2_ASM584v2_genomic.fna.gz
-gunzip GCF_000005845.2_ASM584v2_genomic.fna.gz
+```
+step k  =  b_k -> b_{k+1}
 ```
 
+Each step carries the nearest-neighbour stacking free energy of that step
+(SantaLucia 1998). Emission follows **replication order**: two forks leaving
+`oriC` in opposite directions at ~1,000 bp/s each, the rate of DNA Pol III, so
+one pass over E. coli K-12 MG1655 takes ~39 minutes — matching the known ~40 min
+C-period.
 
+## Every transition carries its own level
 
+ΔG is a duplex property, and a duplex step is identical to its reverse
+complement: 16 transitions, only 10 distinct values. The missing distinction is
+geometric — of the six base-pair step parameters, **tilt and shift change sign**
+between a step and its complement, while twist, roll, slide and rise do not.
 
-## Example Applications
+```
+level = ΔG × sign(tilt)  +  0.12 × z(twist)
+```
 
-- **Genome annotation:** Detect genes, regulatory elements, repetitive regions, and structural boundaries.
-- **Cancer genomics:** Compare normal and tumor tissue; track clonal evolution or chromosomal instability.
-- **Evolutionary genomics:** Identify conserved vs. rapidly evolving regions; discover species-specific “information signatures.”
-- **Personalized medicine:** Explore patient-specific entropy landscapes; highlight novel or rare genomic events.
-- **Single-cell & multi-omics:** Map heterogeneity and transitions in complex cell populations.
+16 distinct levels, minimum gap 0.0825. Feeding `level` instead of a return
+between consecutive steps raises band separation from η² = 0.163 to **0.383**,
+and each of the 16 transitions resolves into its own band of the transition
+probability `P = exp(-|ΔH/H|)`.
 
+Each band then splits in four — the previous step must end on the current step's
+first letter, so there are exactly four predecessors — giving **64 sub-bands,
+one per trinucleotide**. That ordering is uncorrelated with 3-mer frequency
+(ρ = +0.01) and with GC content (ρ = −0.03), so it is not a re-encoding of any
+standard composition statistic.
 
+**What is not yet established:** whether band occupancy along the chromosome
+tracks anything biological — coding vs intergenic, leading vs lagging strand,
+the ori→ter skew inversion. That test is open.
 
+## Layout
 
-## Scientific Impact
+| folder | role |
+|---|---|
+| `genome-data-validation/` | the collector: FASTA → paced stream → QuestDB, with its own README |
+| `transition-bands/` | the 16-band / 64-sub-band result — data, figures and how they were produced |
+| `papers/` | Olson et al. 1998, Lankaš et al. 2003 |
 
-SKA-Genome enables:
+## Quick start
 
-- Unsupervised mapping of the genome’s information landscape at any scale (nucleotide, gene, chromosome, whole genome)
+```bash
+cd genome-data-validation
+pip install -r requirements.txt
 
-- Discovery of boundaries and functional elements even in poorly annotated or novel genomes
+# fetch the E. coli K-12 MG1655 reference genome
+./fetch_data.sh
 
-- Comparative information profiling across samples, tissues, disease states, or species
+# stream the chain into QuestDB at the biological fork rate (~39 min)
+python genome_stream_validator.py --order replication --origin 3925744 --rate 2000
 
-- Insights into cancer, evolution, and genome organization beyond classical variant-centric methods
+# QC the collection
+python validate_data.py
+```
 
-## Foundation Theory
+`--max-steps N` collects a subset first if you want a quick check. Ingestion
+uses QuestDB's ILP on port 9009 (~600,000 rows/s); pg-wire on 8812 caps near
+3,500 rows/s and cannot sustain the stream.
 
-The SKA-Genome project is based on the theoretical framework and mathematical foundations of Structured Knowledge Accumulation (SKA) developed by QUANTIOTA.
+Each collected step carries `value` (ΔG), `twist`, `tilt` and `level` — the
+16-valued input described above — so the dataset is ready for a learner without
+further encoding.
 
-For in-depth theory, proofs, and reference papers, please see our open-access arXiv repository:
+## SKA framework: open science, proprietary real-time engine
 
-[QUANTIOTA / Arxiv — Foundation Theory](https://github.com/quantiota/Arxiv)
+The mathematical foundation and the batch implementation are public for
+verification:
 
-This resource covers the core principles that power SKA’s universal, model-free learning across genomics, physics, finance, and more.
+- [QUANTIOTA / Arxiv — Foundation Theory](https://github.com/quantiota/Arxiv)
+- *Structured Knowledge Accumulation: An Autonomous Framework for Layer-Wise
+  Entropy Reduction in Neural Learning* — [arXiv:2503.13942](https://arxiv.org/abs/2503.13942)
+- *Structured Knowledge Accumulation: The Principle of Entropic Least Action in
+  Forward-Only Neural Learning* — [arXiv:2504.03214](https://arxiv.org/abs/2504.03214)
 
- **Note:**  
- 
-In SKA, the information structure of the genome is *not* pre-existing or revealed by batch analysis.
+The real-time engine extends that foundation to continuous entropy learning on a
+live stream. **That part is proprietary and is not included in this
+repository** — the results in `transition-bands/` were produced with it, and the
+data they were computed from is reproducible here in full.
 
-It emerges dynamically through the real-time, step-by-step SKA learning process.  
+## References
 
-This enables the unsupervised discovery of boundaries, complexity, and informational “landmarks” that are otherwise invisible to traditional, retrospective methods.
-
-
-
-## SKA Framework: Open Science, Proprietary Real-Time Engine
-
-The full mathematical foundation and batch implementation are public for verification on
-[GitHub](https://github.com/quantiota/Arxiv).
-The real-time system extends that foundation to continuous entropy learning — that part is proprietary.
-
-
-
-
+> Olson, Gorin, Lu, Hock & Zhurkin (1998), *DNA sequence-dependent deformability
+> deduced from protein–DNA crystal complexes*, PNAS 95:11163–11168.
+>
+> Lankaš, Šponer, Langowski & Cheatham (2003), *DNA basepair step deformability
+> inferred from molecular dynamics simulations*, Biophys. J. 85:2872–2883.
+>
+> SantaLucia (1998), *A unified view of polymer, dumbbell, and oligonucleotide
+> DNA nearest-neighbor thermodynamics*, PNAS 95:1460–1465.
 
 ## Citation
 
-If you use this work, please cite:  
-> **Bouarfa Mahi, “SKA-Genome: Exploring the hidden information architecture of the genome using Structured Knowledge Accumulation (SKA)” (2025), GitHub.**
+> Bouarfa Mahi, *SKA RealTime Genomics: entropy-driven real-time learning on a
+> genomic chain* (2026), GitHub.
+
+## License
+
+MIT
 
 
 
