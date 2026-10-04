@@ -4,8 +4,7 @@
 Knowledge Accumulation (SKA) framework.**
 
 The chromosome is streamed one base-pair step at a time, at the rate the cell
-builds it, and a forward-only learner consumes it live — no batch pass, no
-backpropagation, no annotation.
+builds it, and a forward-only learner consumes it live.
 
 ## The chain as a data stream
 
