@@ -61,13 +61,51 @@ because they are the same physical stack read from opposite strands.
 The value sits on the **step**, not on the letter: a base is a token with no
 magnitude, a step is a measured physical quantity.
 
-### Known issue — the ten-value degeneracy
+### The ten-value degeneracy, and the geometry that breaks it
 
-`value` alone cannot tell a step from its reverse complement: a consumer sees
-ten levels where the chain has sixteen transitions, so six pairs are
-indistinguishable. `pair` and `transition_index` carry the missing identity,
-but nothing reading only `value` can recover it. The collection is correct;
-the fix belongs downstream, in how an analysis encodes its input.
+A duplex step is **the same physical object** as its reverse complement: the
+dyad rotation that swaps the two strands maps `AA` onto `TT`. Sixteen names,
+ten objects. ΔG cannot separate a pair — not because the measurement is coarse,
+but because there is nothing there to separate.
+
+Of the six base-pair step parameters, four are invariant under that rotation
+(twist, roll, slide, rise) and **two change sign** — tilt and shift. Both source
+papers say so in the notes to their Table 1:
+
+> "AA and TT, AG and CT, etc., have identical averages **except for different
+> signs of Tilt and Shift**." — Olson et al. 1998
+>
+> tilt and shift "**change sign** upon changing the direction in which a DNA
+> sequence is followed" — Lankaš et al. 2003
+
+So `sign(tilt)` is the one bit that says which strand a step is read from, and
+it is **measured**, not conventional. Twist is added at a small weight to break
+the ΔG near-tie between `AC`/`GT` (−1.44) and `CA`/`TG` (−1.45), whose twists
+are 31.5° and 37.3°:
+
+```
+level = ΔG × sign(tilt)  +  0.12 × z(twist)
+```
+
+That gives **sixteen distinct levels, one per transition**, minimum gap 0.0825
+against 0.010 for signed ΔG alone. The weight 0.12 maximises the worst-case
+separation and is sharply tuned — 0.14 drops the gap to 0.03 as accidental
+collisions reappear.
+
+Each step therefore carries `twist`, `tilt` and `level` alongside `value`.
+Note `tilt` is the one column that is **not** strand-invariant: fork 2's steps
+carry the opposite sign, which is the physically correct answer and the reason
+the degeneracy lifts.
+
+Caveats worth keeping in view: tilt magnitudes (0.1–1.7°) sit far below their
+dispersion (~3°), so only the **sign** is used, and for `GG`/`CC` and `AC`/`GT`
+that sign rests on ±0.1° — a weak mean tendency. For `AA`, `AG` and `GA`
+(1.4–1.7°) it is firm.
+
+> Olson, Gorin, Lu, Hock & Zhurkin (1998), *DNA sequence-dependent deformability
+> deduced from protein–DNA crystal complexes*, PNAS 95:11163–11168 — Table 1.
+> Lankaš, Šponer, Langowski & Cheatham (2003), *DNA basepair step deformability
+> inferred from molecular dynamics simulations*, Biophys. J. 85:2872–2883.
 
 ## Why 1,000 steps per second
 
@@ -190,7 +228,10 @@ CREATE TABLE genome_steps (
     position LONG,             -- bp coordinate of the second base
     pair SYMBOL,               -- the dinucleotide, e.g. 'AG'
     transition_index LONG,     -- 0..15
-    value DOUBLE,              -- dG of the step (kcal/mol)
+    value DOUBLE,              -- dG of the step (kcal/mol), strand-symmetric
+    twist DOUBLE,              -- deg, Olson 1998, strand-symmetric
+    tilt DOUBLE,               -- deg, Olson 1998, OPPOSITE on the other strand
+    level DOUBLE,              -- dG*sign(tilt) + 0.12*z(twist): 16 distinct
     rate_hz DOUBLE,            -- imposed acquisition rate (provenance)
     chain_length LONG,
     total_steps LONG,
@@ -206,7 +247,7 @@ sustain the stream.
 
 | file | role |
 |---|---|
-| `genome_chain.py` | the data source — FASTA reader, energy table, step events |
+| `genome_chain.py` | the data source — FASTA reader, energy and geometry tables, step events |
 | `genome_stream_validator.py` | paced emission into QuestDB over ILP |
 | `test_connection.py` | QuestDB smoke test |
 | `validate_data.py` | QC report on the collected chain |
@@ -260,16 +301,16 @@ interleaving is correct.
 The first eight rows as collected — the two forks interleaved, leaving `oriC`
 in opposite directions:
 
-| step_index | fork | chain_index | position | pair | transition_index | value | timestamp |
-|---|---|---|---|---|---|---|---|
-| 1 | `fork1` | 3,925,745 | 3,925,746 | AT | 1 | -0.88 | 14:27:49.216611 |
-| 2 | `fork2` | 3,925,744 | 3,925,745 | TC | 7 | -1.3 | 14:27:49.217111 |
-| 3 | `fork1` | 3,925,746 | 3,925,747 | TC | 7 | -1.3 | 14:27:49.217611 |
-| 4 | `fork2` | 3,925,743 | 3,925,744 | CT | 13 | -1.28 | 14:27:49.218111 |
-| 5 | `fork1` | 3,925,747 | 3,925,748 | CT | 13 | -1.28 | 14:27:49.218611 |
-| 6 | `fork2` | 3,925,742 | 3,925,743 | TT | 5 | -1.0 | 14:27:49.219111 |
-| 7 | `fork1` | 3,925,748 | 3,925,749 | TA | 4 | -0.58 | 14:27:49.219611 |
-| 8 | `fork2` | 3,925,741 | 3,925,742 | TC | 7 | -1.3 | 14:27:49.220111 |
+| step_index | fork | chain_index | position | pair | transition_index | value | tilt | level | timestamp |
+|---|---|---|---|---|---|---|---|---|---|
+| 1 | `fork1` | 3,925,745 | 3,925,746 | AT | 1 | -0.88 | +0.0 | -1.1150 | 10:41:40.935027 |
+| 2 | `fork2` | 3,925,744 | 3,925,745 | TC | 7 | -1.3 | +1.5 | -1.1976 | 10:41:40.935527 |
+| 3 | `fork1` | 3,925,746 | 3,925,747 | TC | 7 | -1.3 | +1.5 | -1.1976 | 10:41:40.936027 |
+| 4 | `fork2` | 3,925,743 | 3,925,744 | CT | 13 | -1.28 | +1.7 | -1.3897 | 10:41:40.936527 |
+| 5 | `fork1` | 3,925,747 | 3,925,748 | CT | 13 | -1.28 | +1.7 | -1.3897 | 10:41:40.937027 |
+| 6 | `fork2` | 3,925,742 | 3,925,743 | TT | 5 | -1.0 | +1.4 | -0.9554 | 10:41:40.937527 |
+| 7 | `fork1` | 3,925,748 | 3,925,749 | TA | 4 | -0.58 | +0.0 | -0.4052 | 10:41:40.938027 |
+| 8 | `fork2` | 3,925,741 | 3,925,742 | TC | 7 | -1.3 | +1.5 | -1.1976 | 10:41:40.938527 |
 
 `chain_index` moves **outward in both directions** from 3,925,744, and no two
 consecutive rows are neighbours on the chain — they belong to different forks.
@@ -280,13 +321,13 @@ Filtering to one fork recovers a contiguous walk at the 1 ms replication step:
 SELECT * FROM genome_steps WHERE fork = 'fork1' ORDER BY step_index;
 ```
 
-| step_index | chain_index | pair | value | timestamp |
-|---|---|---|---|---|
-| 1 | 3,925,745 | AT | -0.88 | 14:27:49.216611 |
-| 3 | 3,925,746 | TC | -1.3 | 14:27:49.217611 |
-| 5 | 3,925,747 | CT | -1.28 | 14:27:49.218611 |
-| 7 | 3,925,748 | TA | -0.58 | 14:27:49.219611 |
-| 9 | 3,925,749 | AT | -0.88 | 14:27:49.220611 |
+| step_index | chain_index | pair | value | tilt | level | timestamp |
+|---|---|---|---|---|---|---|
+| 1 | 3,925,745 | AT | -0.88 | +0.0 | -1.1150 | 10:41:40.935027 |
+| 3 | 3,925,746 | TC | -1.3 | +1.5 | -1.1976 | 10:41:40.936027 |
+| 5 | 3,925,747 | CT | -1.28 | +1.7 | -1.3897 | 10:41:40.937027 |
+| 7 | 3,925,748 | TA | -0.58 | +0.0 | -0.4052 | 10:41:40.938027 |
+| 9 | 3,925,749 | AT | -0.88 | +0.0 | -1.1150 | 10:41:40.939027 |
 
 `step_index` advances by 2 (the other fork takes the alternate slots),
 `chain_index` by 1, and the timestamps by exactly 1.000 ms.
@@ -315,6 +356,41 @@ SELECT * FROM genome_steps WHERE fork = 'fork1' ORDER BY step_index;
 Labels are leading-strand: fork 2's steps are reverse-complemented, so the
 counts are not the raw top-strand counts. `value` is unaffected.
 
+### Step geometry — level separation
+
+Each transition and the level it carries, ordered by `level`. The sign is
+`sign(tilt)`; the small offsets within a sign group come from the twist term.
+
+| step | ΔG | twist ° | tilt ° | level | count |
+|---|---|---|---|---|---|
+| G→C | -2.24 | 33.6 | +0.0 | **-2.2677** | 384,102 |
+| C→G | -2.17 | 36.1 | +0.0 | **-2.0772** | 346,793 |
+| C→C | -1.84 | 32.9 | +0.1 | **-1.9015** | 252,645 |
+| G→T | -1.44 | 31.5 | +0.1 | **-1.5690** | 266,254 |
+| C→T | -1.28 | 31.9 | +1.7 | **-1.3897** | 233,173 |
+| C→A | -1.45 | 37.3 | +0.5 | **-1.2993** | 308,843 |
+| T→C | -1.30 | 36.3 | +1.5 | **-1.1976** | 258,490 |
+| A→T | -0.88 | 29.3 | +0.0 | **-1.1150** | 309,950 |
+| T→T | -1.00 | 35.1 | +1.4 | **-0.9554** | 337,381 |
+| T→A | -0.58 | 37.8 | +0.0 | **-0.4052** | 212,024 |
+| A→A | -1.00 | 35.1 | -1.4 | **+1.0446** | 340,209 |
+| A→G | -1.28 | 31.9 | -1.7 | **+1.1703** | 240,989 |
+| A→C | -1.44 | 31.5 | -0.1 | **+1.3110** | 246,218 |
+| G→A | -1.30 | 36.3 | -1.5 | **+1.4024** | 276,289 |
+| T→G | -1.45 | 37.3 | -0.5 | **+1.6007** | 338,864 |
+| G→G | -1.84 | 32.9 | -0.1 | **+1.7785** | 289,428 |
+
+```
+16 distinct levels for 16 transitions   min gap 0.0825
+✅ every transition has its own level
+   self-complementary tilt = 0 (AT, TA, GC, CG): ✅
+   tilt antisymmetric across the 6 complementary pairs: ✅
+```
+
+The six ΔG collisions are gone: `A→A` and `T→T` both carry −1.00 but sit at
++1.0446 and −0.9554, and the −1.44/−1.45 near-tie (`A→C`/`T→G`) is separated by
+twist to +1.3110 and +1.6007.
+
 ### Collected vs whole-genome counts
 
 An independent round-trip: counts read back from the database against the
@@ -341,6 +417,9 @@ reference re-read from the FASTA. All ten energy levels agree.
    NULL record_id: 0
    NULL step_index: 0
    NULL pair: 0
+   NULL twist: 0
+   NULL tilt: 0
+   NULL level: 0
    positive ΔG (should be 0): 0
    duplicate step_index: 0
    repeated chain_index: 0

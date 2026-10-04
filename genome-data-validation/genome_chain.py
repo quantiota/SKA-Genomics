@@ -26,6 +26,55 @@ ENERGY = np.array([
     -1.45, -1.28, -2.17, -1.84,             # C->A  C->T  C->G  C->C
 ])
 
+# ---- the geometry that breaks the ten-value degeneracy ----------------
+#
+# A duplex step is identical to its reverse complement -- the dyad rotation
+# maps one onto the other -- so dG gives ten values for sixteen steps. Of the
+# six base pair step parameters, four (twist, roll, slide, rise) are invariant
+# under that rotation and two (TILT and SHIFT) change sign. Both source papers
+# state it in the notes to their Table 1:
+#
+#   Olson et al. 1998, PNAS 95:11163 -- "AA and TT, AG and CT, etc., have
+#   identical averages except for different signs of Tilt and Shift."
+#   Lankas et al. 2003, Biophys J 85:2872 -- tilt and shift "change sign upon
+#   changing the direction in which a DNA sequence is followed."
+#
+# sign(tilt) is therefore a MEASURED quantity, not a convention: it is the one
+# bit that says which strand the step is read from. Twist is added at a small
+# weight to break the dG near-tie between AC/GT (-1.44) and CA/TG (-1.45),
+# whose twists are 31.5 and 37.3 deg.
+#
+#     LEVEL = dG * sign(tilt)  +  TWIST_WEIGHT * z(twist)
+#
+# TWIST_WEIGHT = 0.12 maximises the worst-case separation: sixteen distinct
+# levels, minimum gap 0.0825 against 0.010 for signed dG alone. It is sharply
+# tuned -- 0.14 drops the gap to 0.03 as accidental collisions reappear.
+#
+# Tilt magnitudes (0.1-1.7 deg) sit far below their dispersion (~3 deg), so
+# only the SIGN is used. For GG/CC and AC/GT it rests on +-0.1 deg and is a
+# weak mean tendency; for AA, AG and GA (1.4-1.7 deg) it is firm.
+#
+# Olson et al. 1998, Table 1 (protein-DNA crystal complexes), in the same
+# 4*first + next order as ENERGY. Twist is strand-symmetric; tilt is
+# antisymmetric, so a step and its reverse complement carry opposite signs and
+# the four self-complementary steps (AT, TA, GC, CG) are exactly zero.
+TWIST = np.array([
+     35.1,  29.3,  31.9,  31.5,             # A->A  A->T  A->G  A->C
+     37.8,  35.1,  37.3,  36.3,             # T->A  T->T  T->G  T->C
+     36.3,  31.5,  32.9,  33.6,             # G->A  G->T  G->G  G->C
+     37.3,  31.9,  36.1,  32.9,             # C->A  C->T  C->G  C->C
+])
+TILT = np.array([
+     -1.4,   0.0,  -1.7,  -0.1,             # A->A  A->T  A->G  A->C
+      0.0,  +1.4,  -0.5,  +1.5,             # T->A  T->T  T->G  T->C
+     -1.5,  +0.1,  -0.1,   0.0,             # G->A  G->T  G->G  G->C
+     +0.5,  +1.7,   0.0,  +0.1,             # C->A  C->T  C->G  C->C
+])
+TWIST_WEIGHT = 0.12
+
+LEVEL = (ENERGY * np.where(TILT < 0, -1.0, 1.0)
+         + TWIST_WEIGHT * (TWIST - TWIST.mean()) / TWIST.std())
+
 
 def read_fasta(path):
     """Return (header, sequence) of the first record in a FASTA file."""
@@ -138,6 +187,9 @@ class GenomeChain:
             "pair": pair,
             "index": i,
             "value": float(ENERGY[i]),        # identical either strand
+            "twist": float(TWIST[i]),         # identical either strand
+            "tilt": float(TILT[i]),           # OPPOSITE on the other strand
+            "level": float(LEVEL[i]),         # 16 distinct, one per transition
             "fork": fork,
         }
 

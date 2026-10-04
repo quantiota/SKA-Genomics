@@ -63,6 +63,9 @@ CREATE TABLE {TABLE} (
     pair SYMBOL,
     transition_index LONG,
     value DOUBLE,
+    twist DOUBLE,
+    tilt DOUBLE,
+    level DOUBLE,
     rate_hz DOUBLE,
     chain_length LONG,
     total_steps LONG,
@@ -170,7 +173,7 @@ def run_chain_stream(fasta, record_id, organism, rate_hz, packet_steps,
                 f"step_index={e['step']}i,chain_index={e['chain_index']}i,"
                 f"position={e['position']}i,transition_index={int(e['index'])}i,"
                 f"value={e['value']},"
-                
+                f"twist={e['twist']},tilt={e['tilt']},level={e['level']},"
                 f"rate_hz={rate_hz},chain_length={chain_length}i,"
                 f"total_steps={total_steps}i {ts_ns}\n")
             count += 1

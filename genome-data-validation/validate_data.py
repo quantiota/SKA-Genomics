@@ -47,6 +47,45 @@ def validate_genome_data():
             for ti, pair, n, v in trans:
                 print(f"   {ti:2d}  {pair}  ΔG={v:+.2f}  count={n:,}")
 
+            # ---- the geometry: does every transition own a level? ----------
+            # dG is strand-symmetric, so 16 steps carry only 10 values. tilt is
+            # antisymmetric and breaks that; twist separates the -1.44/-1.45
+            # near-tie. `level` should therefore take 16 distinct values.
+            print("\n📐 Step geometry — level separation:")
+            cur.execute(f"""SELECT pair, MIN(value), MIN(twist), MIN(tilt), MIN(level),
+                                   COUNT(*)
+                            FROM {TABLE} GROUP BY pair ORDER BY MIN(level);""")
+            geo = cur.fetchall()
+            levels = [g[4] for g in geo]
+            gaps = [levels[i + 1] - levels[i] for i in range(len(levels) - 1)]
+            for pair, v, tw, ti_, lv, cnt in geo:
+                print(f"   {pair}  ΔG={v:+.2f}  twist={tw:5.1f}  tilt={ti_:+.1f}  "
+                      f"level={lv:+.4f}  count={cnt:,}")
+            n_levels = len(set(round(l, 6) for l in levels))
+            min_gap = min(gaps) if gaps else 0.0
+            print(f"   {n_levels} distinct levels for {len(geo)} transitions   "
+                  f"min gap {min_gap:.4f}")
+            print(f"   {'✅' if n_levels == 16 else '❌'} every transition has its own level")
+
+            # tilt must vanish on the four self-complementary steps
+            cur.execute(f"""SELECT pair, MIN(tilt) FROM {TABLE}
+                            WHERE pair IN ('AT','TA','GC','CG') GROUP BY pair;""")
+            self_rc = cur.fetchall()
+            bad_rc = [p for p, t in self_rc if t != 0.0]
+            print(f"   self-complementary tilt = 0 (AT, TA, GC, CG): "
+                  f"{'✅' if not bad_rc else '❌ ' + str(bad_rc)}")
+
+            # and it must be antisymmetric between a step and its complement
+            RC = {'AA': 'TT', 'AG': 'CT', 'GA': 'TC',
+                  'AC': 'GT', 'CA': 'TG', 'GG': 'CC'}
+            tilts = {p: t for p, _, _, t, _, _ in
+                     ((g[0], g[1], g[2], g[3], g[4], g[5]) for g in geo)}
+            bad_pairs = [f"{a}/{b}" for a, b in RC.items()
+                         if a in tilts and b in tilts
+                         and abs(tilts[a] + tilts[b]) > 1e-9]
+            print(f"   tilt antisymmetric across the 6 complementary pairs: "
+                  f"{'✅' if not bad_pairs else '❌ ' + str(bad_pairs)}")
+
             cur.execute(f"""SELECT record_id, step_index, pair, value, timestamp
                             FROM {TABLE} ORDER BY timestamp DESC LIMIT 10;""")
             print("\n🕐 Recent steps:")
@@ -104,7 +143,8 @@ def validate_genome_data():
 
             print("\n🔍 Data quality:")
             checks = {}
-            for col in ("value", "record_id", "step_index", "pair"):
+            for col in ("value", "record_id", "step_index", "pair",
+                        "twist", "tilt", "level"):
                 cur.execute(f"SELECT COUNT(*) FROM {TABLE} WHERE {col} IS NULL;")
                 checks[f"NULL {col}"] = cur.fetchone()[0]
             cur.execute(f"SELECT COUNT(*) FROM {TABLE} WHERE value > 0;")
