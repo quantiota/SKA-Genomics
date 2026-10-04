@@ -132,7 +132,7 @@ mode and read differently here:
 The export has no `pair` column; `band_means.csv` carries the per-transition
 figures, and the Grafana queries join `genome_steps` for the letters.
 
-## Images to add
+## Images
 
 | file | panel |
 |---|---|
