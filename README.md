@@ -3,6 +3,12 @@
 **Entropy-driven, real-time learning on a genomic chain with the Structured
 Knowledge Accumulation (SKA) framework.**
 
+![The SKA Lagrangian](transition-bands/images/ska_lagrangian.gif)
+
+*The SKA Lagrangian `L(z, ż) = −z·σ(z)(1−σ(z))·ż` along the E. coli chain.
+Each of the 16 base-pair transitions traces its own sheet, and the ordering
+holds from the first steps to the last.*
+
 The chromosome is streamed one base-pair step at a time, at the rate the cell
 builds it, and a forward-only learner consumes it live.
 
