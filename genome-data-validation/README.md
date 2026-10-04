@@ -177,9 +177,9 @@ CREATE TABLE genome_steps (
     record_id SYMBOL,          -- NC_000913.3
     organism SYMBOL,
     step_index LONG,           -- emission order
+    fork SYMBOL,               -- 'linear', or 'fork1' / 'fork2' in replication order
     chain_index LONG,          -- position along the chain
     position LONG,             -- bp coordinate of the second base
-    fork LONG,                 -- 0 linear, else 1 or 2 in replication order
     pair SYMBOL,               -- the dinucleotide, e.g. 'AG'
     transition_index LONG,     -- 0..15
     value DOUBLE,              -- dG of the step (kcal/mol)
