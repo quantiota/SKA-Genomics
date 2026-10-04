@@ -39,16 +39,32 @@ ENERGY = np.array([
 #   Lankas et al. 2003, Biophys J 85:2872 -- tilt and shift "change sign upon
 #   changing the direction in which a DNA sequence is followed."
 #
-# sign(tilt) is therefore a MEASURED quantity, not a convention: it is the one
-# bit that says which strand the step is read from. Twist is added at a small
-# weight to break the dG near-tie between AC/GT (-1.44) and CA/TG (-1.45),
-# whose twists are 31.5 and 37.3 deg.
+# What is MEASURED is the ANTISYMMETRY: tilt flips sign between a step and its
+# complement. What is CONVENTION is the sign assignment itself -- which strand
+# counts as positive tilt. Flipping all sixteen signs gives an equally valid,
+# mirrored encoding. For GG/CC and AC/GT the +-0.1 deg tilt sits well inside a
+# spread of 3-4 deg, so for those two pairs the assignment is convention rather
+# than measurement.
+#
+# Twist is added at a small weight to break the dG near-tie between AC/GT
+# (-1.44) and CA/TG (-1.45), whose twists are 31.5 and 37.3 deg.
 #
 #     LEVEL = dG * sign(tilt)  +  TWIST_WEIGHT * z(twist)
 #
 # TWIST_WEIGHT = 0.12 maximises the worst-case separation: sixteen distinct
-# levels, minimum gap 0.0825 against 0.010 for signed dG alone. It is sharply
-# tuned -- 0.14 drops the gap to 0.03 as accidental collisions reappear.
+# levels, minimum gap 0.0825 against 0.010 for signed dG alone.
+#
+# CAVEAT -- the weight is a tuned constant and the encoding is sensitive to it.
+# 0.14 drops the minimum gap to 0.026, and 0.05, 0.30 and 0.50 change the
+# ORDER of the levels, not just their spacing. A tuning-free alternative keeps
+# the same ordering (sign group, then dG, twist only where dG ties exactly) and
+# spaces the sixteen evenly in [-1, 1], giving a uniform gap of 0.1333 at the
+# cost of discarding dG magnitude.
+#
+# The level axis does NOT follow stability: the sign flip puts T->T at -0.955
+# and A->A at +1.045 although both have dG = -1.00. Levels are ordered by
+# strand direction first and energy second, and are a code for identity, not a
+# scale of duplex stability.
 #
 # Tilt magnitudes (0.1-1.7 deg) sit far below their dispersion (~3 deg), so
 # only the SIGN is used. For GG/CC and AC/GT it rests on +-0.1 deg and is a
