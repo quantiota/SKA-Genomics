@@ -102,9 +102,6 @@ The full mathematical foundation and batch implementation are public for verific
 The real-time system extends that foundation to continuous entropy learning — that part is proprietary.
 
 
-**Interactive visualization of the SKA forward learning algorithm on MNIST**
-
-- [SKA Explorer](https://huggingface.co/quant-iota)
 
 
 
