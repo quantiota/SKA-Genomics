@@ -126,12 +126,11 @@ figures, and the Grafana queries join `genome_steps` for the letters.
 
 Naming for the 16: `band_<pair>.png`, e.g. `band_AA.png`, `band_GC.png`.
 
-Queries that produce them are in `../genome-ska-engine/queries/`:
+Queries that produce them are in `../transition-bands/queries/`:
 
-- `grafana_entropy_xy.sql` — the entropy panel
+- `grafana_entropy.sql` — the entropy panel
 - `grafana_transition_bands.sql` — the 16 bands
-- `grafana_transition_subbands.sql` — one transition at a time, split by
-  predecessor, driven by a `$pair` dashboard variable
+
 
 **Fix the axes before capturing the set of 16** — y min 0, y max 1, x max 7000.
 Otherwise each panel autoscales and unequal spreads look equal: `G→C` spans
