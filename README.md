@@ -17,7 +17,7 @@ holds from the first steps to the last.*
 and ż its rate of change. Each colour is one of the 16 base-pair transitions; each transition
 splits into four layers, one per preceding base, giving 64 sub-bands, one per trinucleotide.
 Layers that coincide in P separate along ż. With a constant time step, P is the relative jump of
-the SKA Lagrangian between consecutive steps, P = exp(−|ΔL/L|).* [Download](transition-bands/transition_probability_vr.html) and open on your desktop.
+the SKA Lagrangian between consecutive steps, P = exp(−|ΔL/L|).* [Download](transition-bands/images/transition_probability_vr.html) and open on your desktop.
 
 The chromosome is streamed one base-pair step at a time, at the rate the cell
 builds it, and a forward-only learner consumes it live.
