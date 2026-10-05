@@ -12,7 +12,7 @@ holds from the first steps to the last.*
 
 ![Transition probability P in the phase space (z, ż)](transition-bands/images/bands_3d_all.gif)
 
-*Transition probability P = exp(−|ΔH/H|) in the phase space (z, ż) of the SKA learner, for
+*[Transition probability](https://github.com/quantiota/SKA-Genomics/tree/main/transition-bands) P = exp(−|ΔH/H|) in the phase space (z, ż) of the SKA learner, for
 3,498 steps of the E. coli K-12 MG1655 chain (fork 1, from oriC). z is the knowledge norm ‖Z‖
 and ż its rate of change. Each colour is one of the 16 base-pair transitions; each transition
 splits into four layers, one per preceding base, giving 64 sub-bands, one per trinucleotide.
