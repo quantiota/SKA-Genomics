@@ -121,8 +121,7 @@ data they were computed from is reproducible here in full.
 
 ## Citation
 
-> Bouarfa Mahi, *SKA RealTime Genomics: entropy-driven real-time learning on a
-> genomic chain* (2026), GitHub.
+[CITATION](https://github.com/quantiota/SKA-Genomics/blob/main/CITATION.cff)
 
 ## License
 
