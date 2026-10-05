@@ -9,6 +9,16 @@ Knowledge Accumulation (SKA) framework.**
 Each of the 16 base-pair transitions traces its own sheet, and the ordering
 holds from the first steps to the last.*
 
+
+![Transition probability P in the phase space (z, ż)](transition-bands/images/bands_3d_all.gif)
+
+*Transition probability P = exp(−|ΔH/H|) in the phase space (z, ż) of the SKA learner, for
+3,498 steps of the E. coli K-12 MG1655 chain (fork 1, from oriC). z is the knowledge norm ‖Z‖
+and ż its rate of change. Each colour is one of the 16 base-pair transitions; each transition
+splits into four layers, one per preceding base, giving 64 sub-bands, one per trinucleotide.
+Layers that coincide in P separate along ż. With a constant time step, P is the relative jump of
+the SKA Lagrangian between consecutive steps, P = exp(−|ΔL/L|).*
+
 The chromosome is streamed one base-pair step at a time, at the rate the cell
 builds it, and a forward-only learner consumes it live.
 
