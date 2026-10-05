@@ -1,0 +1,96 @@
+cff-version: 1.2.0
+message: "If you use this method, dataset or code, please cite it as below."
+type: software
+title: "SKA RealTime Genomics: entropy-driven real-time learning on a genomic chain with Structured Knowledge Accumulation"
+authors:
+  - family-names: Mahi
+    given-names: Bouarfa
+    affiliation: Université Joseph Fourier
+repository-code: "https://github.com/quantiota/SKA-Genomics"
+license: MIT
+version: d24379f
+date-released: 2026-10-05
+keywords:
+  - genomics
+  - DNA
+  - Escherichia coli
+  - nearest-neighbour thermodynamics
+  - base-pair step parameters
+  - transition probability
+  - information theory
+  - real-time learning
+  - Structured Knowledge Accumulation
+abstract: >-
+  A method for studying a genome as a real-time stream. The E. coli K-12 MG1655
+  chromosome (NC_000913.3) is emitted one base-pair step at a time, in
+  replication order from oriC, at the DNA polymerase III fork rate. Each step
+  carries a level that identifies its transition uniquely, built from the
+  nearest-neighbour stacking free energy (SantaLucia 1998), the strand-dependent
+  sign of tilt and the twist of the step (Olson et al. 1998; Lankas et al. 2003).
+  A forward-only Structured Knowledge Accumulation learner assigns each of the
+  16 base-pair transitions, and each of their 64 trinucleotide contexts, a
+  constant transition probability P = exp(-|dH/H|) along the chain. These
+  probability bands are sharp, stable after a short learning phase,
+  independent of composition, and separate in the phase space (z, z') of the
+  learner. The repository provides the validated stream, the encoding, the
+  exported run and the figures.
+references:
+  - type: article
+    authors:
+      - family-names: SantaLucia
+        given-names: John
+    title: "A unified view of polymer, dumbbell, and oligonucleotide DNA nearest-neighbor thermodynamics"
+    journal: "Proceedings of the National Academy of Sciences"
+    volume: 95
+    start: 1460
+    end: 1465
+    year: 1998
+    doi: 10.1073/pnas.95.4.1460
+  - type: article
+    authors:
+      - family-names: Olson
+        given-names: Wilma K.
+      - family-names: Gorin
+        given-names: Andrey A.
+      - family-names: Lu
+        given-names: Xiang-Jun
+      - family-names: Hock
+        given-names: Lynette M.
+      - family-names: Zhurkin
+        given-names: Victor B.
+    title: "DNA sequence-dependent deformability deduced from protein-DNA crystal complexes"
+    journal: "Proceedings of the National Academy of Sciences"
+    volume: 95
+    start: 11163
+    end: 11168
+    year: 1998
+    doi: 10.1073/pnas.95.19.11163
+  - type: article
+    authors:
+      - family-names: Lankaš
+        given-names: Filip
+      - family-names: Šponer
+        given-names: Jiří
+      - family-names: Langowski
+        given-names: Jörg
+      - family-names: Cheatham
+        given-names: Thomas E.
+        name-suffix: III
+    title: "DNA basepair step deformability inferred from molecular dynamics simulations"
+    journal: "Biophysical Journal"
+    volume: 85
+    start: 2872
+    end: 2883
+    year: 2003
+    doi: 10.1016/S0006-3495(03)74710-9
+  - type: article
+    authors:
+      - family-names: Blattner
+        given-names: Frederick R.
+    title: "The complete genome sequence of Escherichia coli K-12"
+    journal: "Science"
+    volume: 277
+    start: 1453
+    end: 1462
+    year: 1997
+    doi: 10.1126/science.277.5331.1453
