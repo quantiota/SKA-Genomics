@@ -8,7 +8,7 @@ authors:
     affiliation: Université Joseph Fourier
 repository-code: "https://github.com/quantiota/SKA-Genomics"
 license: MIT
-version: d24379f
+version: e27f28d
 date-released: 2026-10-05
 keywords:
   - genomics
