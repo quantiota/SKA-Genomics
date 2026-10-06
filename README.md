@@ -22,6 +22,19 @@ the SKA Lagrangian between consecutive steps, P = exp(−|ΔL/L|).* [Download](t
 The chromosome is streamed one base-pair step at a time, at the rate the cell
 builds it, and a forward-only learner consumes it live.
 
+
+
+
+[<img src="genome_thumbnail.png" width="640" height="360"
+/>](https://youtu.be/c0Pd2QR2mjw)
+
+
+E. coli K-12 MG1655 — Integral path in the 3D probability phase space
+
+*E. coli K-12 MG1655, step by step: as the SKA learner reads the chromosome one base-pair step at a time, each of the 16 transitions settles on its own probability layers (64 sub-bands) in the phase space (z, ż, P), and the genome's path weaves between them. The structure is the same for every sequence; only the path is specific to the genome. [Download Video](genome_bands_path.mp4)*
+
+
+
 ## The chain as a data stream
 
 ```
