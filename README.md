@@ -131,6 +131,9 @@ data they were computed from is reproducible here in full.
 >
 > SantaLucia (1998), *A unified view of polymer, dumbbell, and oligonucleotide
 > DNA nearest-neighbor thermodynamics*, PNAS 95:1460–1465.
+>
+> John Archibald Wheeler, "Information, Physics, Quantum: the Search for Links",
+> Proc. 3rd Int. Symp. Foundations of Quantum Mechanics, Tokyo, 1989, pp. 354–368
 
 ## Citation
 
