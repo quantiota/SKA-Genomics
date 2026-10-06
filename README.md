@@ -31,7 +31,7 @@ builds it, and a forward-only learner consumes it live.
 
 E. coli K-12 MG1655 — Integral path in the 3D probability phase space
 
-*E. coli K-12 MG1655, step by step: as the SKA learner reads the chromosome one base-pair step at a time, each of the 16 transitions settles on its own probability layers (64 sub-bands) in the phase space (z, ż, P), and the genome's path weaves between them. The structure is the same for every sequence; only the path is specific to the genome. [Download Video](genome_bands_path.mp4)*
+*E. coli K-12 MG1655, step by step: as the SKA learner reads the chromosome one base-pair step at a time, each of the 16 transitions settles on its own probability layers (64 sub-bands) in the phase space (z, ż, P), and the genome's path weaves between them. The structure is the same for every sequence; only the path is specific to the genome. [Download](genome_bands_path.mp4) and open on your desktop*
 
 
 
