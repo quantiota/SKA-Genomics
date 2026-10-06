@@ -25,7 +25,7 @@ builds it, and a forward-only learner consumes it live.
 
 
 
-[<img src="genome_thumbnail.png" width="640" height="360"
+[<img src="genome_thumbnail.png" width="1280" height="720"
 />](https://youtu.be/c0Pd2QR2mjw)
 
 
