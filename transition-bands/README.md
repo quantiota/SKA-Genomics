@@ -160,6 +160,8 @@ figures, and the Grafana queries join `genome_steps` for the letters.
 | `images/entropy.png` | entropy vs `step_index`, all 3,500 steps |
 | `images/probability_16_bands.png` | P vs `step_index`, partitioned by transition |
 | `images/band_AA.png` … `images/band_CC.png` | one per transition, partitioned by trinucleotide — 16 files |
+| `images/transition_probability_vr_replay.html` | the probability cube (z, ż, P) with a replay: the path followed step by step in chain order |
+| `images/entropy_vr.html` | the entropy cube (z, ż, H): 16 trajectories, one per transition |
 
 Naming for the 16: `band_<pair>.png`, e.g. `band_AA.png`, `band_GC.png`.
 
